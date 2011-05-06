@@ -68,7 +68,12 @@
         }
       }
     }
-    if (wholeAttribute && !checkAttr(qualifier, this.getAttribute(attribute) || '', value)) {
+    var attr = this.getAttribute(attribute) || '';
+    // cater for IE which helpfully returns the 'style' attribute as an object
+    if (typeof(attr.cssText) == 'string') {
+        attr = attr.cssText;
+    }
+    if (wholeAttribute && !checkAttr(qualifier, attr, value)) {
       return false;
     }
     return this;
@@ -95,19 +100,21 @@
   }
 
   function checkAttr(qualify, actual, val) {
+    // add ignore case for IE6 capitalization, may need to add a way to specify this somewhere?
+    var flags = 'i';
     switch (qualify) {
     case '=':
       return actual == val;
     case '^=':
-      return actual.match(attrCache.g('^=' + val) || attrCache.s('^=' + val, new RegExp('^' + clean(val))));
+      return actual.match(attrCache.g('^=' + val) || attrCache.s('^=' + val, new RegExp('^' + clean(val), flags)));
     case '$=':
-      return actual.match(attrCache.g('$=' + val) || attrCache.s('$=' + val, new RegExp(clean(val) + '$')));
+      return actual.match(attrCache.g('$=' + val) || attrCache.s('$=' + val, new RegExp(clean(val) + '$', flags)));
     case '*=':
-      return actual.match(attrCache.g(val) || attrCache.s(val, new RegExp(clean(val))));
+      return actual.match(attrCache.g(val) || attrCache.s(val, new RegExp(clean(val), flags)));
     case '~=':
-      return actual.match(attrCache.g('~=' + val) || attrCache.s('~=' + val, new RegExp('(?:^|\\s+)' + clean(val) + '(?:\\s+|$)')));
+      return actual.match(attrCache.g('~=' + val) || attrCache.s('~=' + val, new RegExp('(?:^|\\s+)' + clean(val) + '(?:\\s+|$)', flags)));
     case '|=':
-      return actual.match(attrCache.g('|=' + val) || attrCache.s('|=' + val, new RegExp('^' + clean(val) + '(-|$)')));
+      return actual.match(attrCache.g('|=' + val) || attrCache.s('|=' + val, new RegExp('^' + clean(val) + '(-|$)', flags)));
     }
     return false;
   }

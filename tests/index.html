@@ -40,7 +40,8 @@
         <div class="tokens" title="one" id="token-one"></div>
         <div class="tokens" title="one two" id="token-two"></div>
         <div class="tokens" title="one two three #%" id="token-three">
-          <a href="foo"  id="token-four">
+          <!-- IE helpfully adds the host name to href unless fully specified, so do so -->
+          <a href="http://example.com/foo"  id="token-four">
             <div id="token-five"></div>
           </a>
         </div>
@@ -50,6 +51,13 @@
         <a class="order-matters">
           <em class="order-matters"></em><b class="order-matters"></b>
         </a>
+      </div>
+
+      <div id="style-counts">
+          <div id="style-test1" style="margin:10px;"></div>
+          <div id="style-test2" style=""></div>
+          <div id="style-test3"></div>
+          <div id="style-test4" style="padding: 10px; margin:10px; z-index:100;"></div>
       </div>
 
      <ol id="tests"></ol>

@@ -121,7 +121,7 @@ sink('tokenizer', function (test, ok) {
     ok(Q('div .tokens[title="one two"]')[0] == document.getElementById('token-two'), 'found div .tokens[title="one two"]');
     ok(Q('div .tokens[title="one two three #%"]')[0] == document.getElementById('token-three'), 'found div .tokens[title="one two three #%"]');
     ok(Q("div .tokens[title='one two three #%'] a")[0] == document.getElementById('token-four'), 'found div .tokens[title=\'one two three #%\'] a');
-    ok(Q('div .tokens[title="one two three #%"] a[href=foo] div')[0] == document.getElementById('token-five'), 'found div .tokens[title="one two three #%"] a[href=foo] div');
+    ok(Q('div .tokens[title="one two three #%"] a[href="http://example.com/foo"] div')[0] == document.getElementById('token-five'), 'found div .tokens[title="one two three #%"] a[href=foo] div');
   });
 
 });
@@ -159,6 +159,33 @@ sink('argument types', function (test, ok) {
     ok(Q(window)[0] == window, 'Q(window)[0] == window');
     ok(Q(document)[0] == document, 'Q(document)[0] == document');
   });
+});
+
+sink('style counts', function (test, ok) {
+  // NOTE: these fail for IE8 as it's implementation of querySelectAll() does not 
+  // appear to work for the style attribute unless it is added via javascript
+  // .. more investigation needed
+
+  test('should handle exact match of style', 1, function () {
+    var expected = document.getElementById('style-test1');
+    ok(Q('#style-counts div[style="margin:10px;"]')[0] == expected, 'found exact match style');
+  });
+
+  test('should handle starts with style', 1, function () {
+    var expected = document.getElementById('style-test4');
+    ok(Q('#style-counts div[style^=padding]')[0] == expected, 'found starts with style');
+  });
+
+  test('should handle ends with style', 1, function () {
+    var expected = document.getElementById('style-test1');
+    ok(Q('#style-counts div[style$="10px;"]')[0] == expected, 'found ends with style');
+  });
+
+  test('should handle wildcarded style', 1, function () {
+    var expected = document.getElementById('style-test4');
+    ok(Q('#style-counts div[style*=z-index]')[0] == expected, 'found wildcard style');
+  });
+
 });
 
 start();
