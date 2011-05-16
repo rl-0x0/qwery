@@ -1,7 +1,13 @@
+/*!
+  * qwery.js - copyright @dedfat
+  * https://github.com/ded/qwery
+  * Follow our software http://twitter.com/dedfat
+  * MIT License
+  */
 !function (context, doc) {
 
   var c, i, j, k, l, m, o, p, r, v,
-      el, node, len, found, classes, item, items, token, collection,
+      el, node, len, found, classes, item, items, token,
       id = /#([\w\-]+)/,
       clas = /\.[\w\-]+/g,
       idOnly = /^#([\w\-]+$)/,
@@ -10,6 +16,7 @@
       tagAndOrClass = /^([\w]+)?\.([\w\-]+)$/,
       html = doc.documentElement,
       tokenizr = /\s(?![\s\w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^'"]*\])/,
+      specialChars = /([.*+?\^=!:${}()|\[\]\/\\])/g,
       simple = /^([a-z0-9]+)?(?:([\.\#]+[\w\-\.#]+)?)/,
       attr = /\[([\w\-]+)(?:([\|\^\$\*\~]?\=)['"]?([ \w\-\/\?\&\=\:\.\(\)\!,@#%<>\{\}\$\*\^]+)["']?)?\]/,
       chunker = new RegExp(simple.source + '(' + attr.source + ')?');
@@ -96,7 +103,7 @@
   }
 
   function clean(s) {
-    return cleanCache.g(s) || cleanCache.s(s, s.replace(/([.*+?\^=!:${}()|\[\]\/\\])/g, '\\$1'));
+    return cleanCache.g(s) || cleanCache.s(s, s.replace(specialChars, '\\$1'));
   }
 
   function checkAttr(qualify, actual, val) {
@@ -148,26 +155,10 @@
     return ret;
   }
 
-  var isAncestor = 'compareDocumentPosition' in html ?
-    function (element, container) {
-      return (container.compareDocumentPosition(element) & 16) == 16;
-    } : 'contains' in html ?
-    function (element, container) {
-      return container !== element && container.contains(element);
-    } :
-    function (element, container) {
-      while (element = element.parentNode) {
-        if (element === container) {
-          return 1;
-        }
-      }
-      return 0;
-    };
-
   function boilerPlate(selector, _root, fn) {
     var root = (typeof _root == 'string') ? fn(_root)[0] : (_root || doc);
-    if (isNode(selector)) {
-      return !_root || (isNode(root) && isAncestor(selector, root)) ? [selector] : [];
+    if (selector === window || isNode(selector)) {
+      return !_root || (selector !== window && isNode(root) && isAncestor(selector, root)) ? [selector] : [];
     }
     if (selector && typeof selector === 'object' && isFinite(selector.length)) {
       return array(selector);
@@ -182,21 +173,7 @@
   }
 
   function isNode(el) {
-    return (el === window || el && el.nodeType && el.nodeType.toString().match(/[19]/));
-  }
-
-  function qsa(selector, _root) {
-    var root = (typeof _root == 'string') ? qsa(_root)[0] : (_root || doc);
-    if (!root || !selector) {
-      return [];
-    }
-    if (m = boilerPlate(selector, _root, qsa)) {
-      return m;
-    }
-    if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
-      return array((root).getElementsByClassName(m[1]));
-    }
-    return array((root).querySelectorAll(selector));
+    return (el && el.nodeType && (el.nodeType == 1 || el.nodeType == 9));
   }
 
   function uniq(ar) {
@@ -213,20 +190,43 @@
     return a;
   }
 
-  var qwery = function () {
-    // return fast. boosh.
-    if (doc.querySelector && doc.querySelectorAll) {
-      return qsa;
+  function qwery(selector, _root) {
+    var root = (typeof _root == 'string') ? qwery(_root)[0] : (_root || doc);
+    if (!root || !selector) {
+      return [];
     }
-    return function (selector, _root) {
-      var root = (typeof _root == 'string') ? qwery(_root)[0] : (_root || doc);
-      if (!root || !selector) {
-        return [];
+    if (m = boilerPlate(selector, _root, qwery)) {
+      return m;
+    }
+    return select(selector, root);
+  }
+
+  var isAncestor = 'compareDocumentPosition' in html ?
+    function (element, container) {
+      return (container.compareDocumentPosition(element) & 16) == 16;
+    } : 'contains' in html ?
+    function (element, container) {
+      container = container == doc || container == window ? html : container;
+      return container !== element && container.contains(element);
+    } :
+    function (element, container) {
+      while (element = element.parentNode) {
+        if (element === container) {
+          return 1;
+        }
       }
-      var i, l, result = [], collections = [], element;
-      if (m = boilerPlate(selector, _root, qwery)) {
-        return m;
+      return 0;
+    },
+
+  select = (false && doc.querySelector && doc.querySelectorAll) ?
+    function (selector, root) {
+      if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
+        return array((root).getElementsByClassName(m[1]));
       }
+      return array((root).querySelectorAll(selector));
+    } :
+    function (selector, root) {
+      var result = [], collection, collections = [], i;
       if (m = selector.match(tagAndOrClass)) {
         items = root.getElementsByTagName(m[1] || '*');
         r = classCache.g(m[2]) || classCache.s(m[2], new RegExp('(^|\\s+)' + m[2] + '(\\s+|$)'));
@@ -251,7 +251,6 @@
       }
       return uniq(result);
     };
-  }();
 
   qwery.uniq = uniq;
   var oldQwery = context.qwery;
