@@ -162,29 +162,55 @@ sink('argument types', function (test, ok) {
 });
 
 sink('style counts', function (test, ok) {
-  // NOTE: these fail for IE8 as it's implementation of querySelectAll() does not 
-  // appear to work for the style attribute unless it is added via javascript
-  // .. more investigation needed
-
-  test('should handle exact match of style', 1, function () {
+  /*test('should handle exact match of style', 1, function () {
     var expected = document.getElementById('style-test1');
-    ok(Q('#style-counts div[style="margin:10px;"]')[0] == expected, 'found exact match style');
-  });
+    // NOTE: cannot use ; in selectors!!!!
+    // so using an exact selector is not viable across all browsers
+    // e.g. FF4 will automatically add a ; and ignores invalid values such as foo
+    ok(Q('#style-counts div[style="margin: auto;"]')[0] == expected, 'found exact match style');
+  });*/
 
-  test('should handle starts with style', 1, function () {
-    var expected = document.getElementById('style-test4');
-    ok(Q('#style-counts div[style^=padding]')[0] == expected, 'found starts with style');
-  });
+  var isIE = false;
+  /*@cc_on
+    @if (@_win32)
+      isIE = true;
+      ieVersion = @_jscript_version;
+    @end @*/
+        
+  if (!isIE) {
+      test('should handle starts with style', 1, function () {
+        var expected = document.getElementById('style-test4');
+        ok(Q('#style-counts div[style^=padding]')[0] == expected, 'found starts with style');
+      });
 
-  test('should handle ends with style', 1, function () {
-    var expected = document.getElementById('style-test1');
-    ok(Q('#style-counts div[style$="10px;"]')[0] == expected, 'found ends with style');
-  });
+      test('should handle ends with style', 1, function () {
+        var expected = document.getElementById('style-test1');
+        ok(Q('#style-counts div[style$="auto;"]')[0] == expected, 'found ends with style');
+      });
 
-  test('should handle wildcarded style', 1, function () {
-    var expected = document.getElementById('style-test4');
-    ok(Q('#style-counts div[style*=z-index]')[0] == expected, 'found wildcard style');
-  });
+      test('should handle wildcarded style', 1, function () {
+        var expected = document.getElementById('style-test4');
+        ok(Q('#style-counts div[style*="z-index"]')[0] == expected, 'found wildcard style');
+      });
+  } else {
+
+      test('IE should handle starts with style - IE8 reorders, IE6/7 has full css for padding, e.g. PADDING_TOP!', 1, function () {
+        var expected = document.getElementById('style-test4');
+        var attr_value = (ieVersion >= 8) ? "Z-INDEX" : (ieVersion >= 7 ? "PADDING" : "PAD");
+        ok(Q('#style-counts div[style^=' + attr_value + ']')[0] == expected, 'found starts with style');
+      });
+
+      test('IE should handle ends with style - last attribute does not have ";"', 1, function () {
+        var expected = document.getElementById('style-test1');
+        ok(Q('#style-counts div[style$="auto"]')[0] == expected, 'found ends with style');
+      });
+
+      test('IE should handle capitalised wildcard style', 1, function () {
+        var expected = document.getElementById('style-test4');
+        ok(Q('#style-counts div[style*=PAD]')[0] == expected, 'found starts with capitalised wildcard style');
+      });
+
+  }
 
 });
 

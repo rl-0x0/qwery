@@ -84,7 +84,7 @@
     var attr = this.getAttribute(attribute) || '';
     // cater for IE which helpfully returns the 'style' attribute as an object
     if (typeof(attr.cssText) == 'string') {
-        attr = attr.cssText;
+      attr = attr.cssText;
     }
     if (wholeAttribute && !checkAttr(qualifier, attr, value)) {
       return false;
@@ -113,21 +113,19 @@
   }
 
   function checkAttr(qualify, actual, val) {
-    // add ignore case for IE6 capitalization, may need to add a way to specify this somewhere?
-    var flags = 'i';
     switch (qualify) {
     case '=':
       return actual == val;
     case '^=':
-      return actual.match(attrCache.g('^=' + val) || attrCache.s('^=' + val, new RegExp('^' + clean(val), flags)));
+      return actual.match(attrCache.g('^=' + val) || attrCache.s('^=' + val, new RegExp('^' + clean(val))));
     case '$=':
-      return actual.match(attrCache.g('$=' + val) || attrCache.s('$=' + val, new RegExp(clean(val) + '$', flags)));
+      return actual.match(attrCache.g('$=' + val) || attrCache.s('$=' + val, new RegExp(clean(val) + '$')));
     case '*=':
-      return actual.match(attrCache.g(val) || attrCache.s(val, new RegExp(clean(val), flags)));
+      return actual.match(attrCache.g(val) || attrCache.s(val, new RegExp(clean(val))));
     case '~=':
-      return actual.match(attrCache.g('~=' + val) || attrCache.s('~=' + val, new RegExp('(?:^|\\s+)' + clean(val) + '(?:\\s+|$)', flags)));
+      return actual.match(attrCache.g('~=' + val) || attrCache.s('~=' + val, new RegExp('(?:^|\\s+)' + clean(val) + '(?:\\s+|$)')));
     case '|=':
-      return actual.match(attrCache.g('|=' + val) || attrCache.s('|=' + val, new RegExp('^' + clean(val) + '(-|$)', flags)));
+      return actual.match(attrCache.g('|=' + val) || attrCache.s('|=' + val, new RegExp('^' + clean(val) + '(-|$)')));
     }
     return false;
   }
@@ -224,7 +222,7 @@
       return 0;
     },
 
-  select = (false && doc.querySelector && doc.querySelectorAll) ?
+  select = (doc.querySelector && doc.querySelectorAll) ?
     function (selector, root) {
       if (doc.getElementsByClassName && (m = selector.match(classOnly))) {
         return array((root).getElementsByClassName(m[1]));
